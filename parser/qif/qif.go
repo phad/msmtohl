@@ -16,6 +16,7 @@ type Record struct {
 	Type string
 	Date string
 	Amount string
+	Number string
 	Status string
 	Payee string
 	Label string
@@ -23,8 +24,8 @@ type Record struct {
 }
 
 func (r *Record) String() string {
-	return fmt.Sprintf("type %q date %q amount %q status %q payee %q label %q message %q",
-		r.Type, r.Date, r.Amount, r.Status, r.Payee, r.Label, r.Message)
+	return fmt.Sprintf("type %q date %q amount %q number %q status %q payee %q label %q message %q",
+		r.Type, r.Date, r.Amount, r.Number, r.Status, r.Payee, r.Label, r.Message)
 }
 
 func New(qifData io.Reader) *QIF {
@@ -51,9 +52,12 @@ func (q *QIF) Next() (*Record, error) {
 			case "D":
 				// Date line
 				r.Date = rest
-			case "T":
+			case "T", "U":
 				// Transaction amount line
 				r.Amount = rest
+			case "N":
+				// Check number line, or other identifier eg. ATM
+				r.Number = rest
 			case "C":
 				// Transaction status line
 				r.Status = rest
