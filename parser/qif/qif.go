@@ -20,12 +20,12 @@ type Record struct {
 	Status string
 	Payee string
 	Label string
-	Message string
+	Memo string
 }
 
 func (r *Record) String() string {
-	return fmt.Sprintf("type %q date %q amount %q number %q status %q payee %q label %q message %q",
-		r.Type, r.Date, r.Amount, r.Number, r.Status, r.Payee, r.Label, r.Message)
+	return fmt.Sprintf("type %q date %q amount %q number %q status %q payee %q label %q memo %q",
+		r.Type, r.Date, r.Amount, r.Number, r.Status, r.Payee, r.Label, r.Memo)
 }
 
 func New(qifData io.Reader) *QIF {
@@ -68,8 +68,8 @@ func (q *QIF) Next() (*Record, error) {
 				// Label (category) line
 				r.Label = rest
 			case "M":
-				// Message (description) line
-				r.Message = rest
+				// Memo (description) line
+				r.Memo = rest
 			case "^":
 				// Record separator line
 				return r, nil

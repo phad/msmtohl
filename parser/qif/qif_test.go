@@ -122,11 +122,11 @@ D15/03'2003
                         wantEof: true,
                 },
                 {
-                        desc: "M Message line",
+                        desc: "M Memo line",
                         qif: `MShopping
 ^
 `,
-                        wantRecs: []*Record{&Record{Message: "Shopping"}},
+                        wantRecs: []*Record{&Record{Memo: "Shopping"}},
                         wantErrs: []bool{false},
                         wantEof: true,
                 },
@@ -142,7 +142,7 @@ LHousing:Improvements
 ^
 `,
                         wantRecs: []*Record{
-				&Record{Date:"15/03'2003", Amount: "-26.07", Number: "VISA", Status: "X", Payee: "Homebase", Label: "Housing:Improvements", Message: "Paint"}, 
+				&Record{Date:"15/03'2003", Amount: "-26.07", Number: "VISA", Status: "X", Payee: "Homebase", Label: "Housing:Improvements", Memo: "Paint"}, 
 			},
                         wantErrs: []bool{false},
                         wantEof: true,
