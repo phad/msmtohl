@@ -12,4 +12,12 @@
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
+
+# Mac OS X
+.DS_Store
+
+# VIM
+*.swp
+
+# program names
 main
