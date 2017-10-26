@@ -95,11 +95,11 @@ D15/03'2003
                         wantEof: true,
                 },
                 {
-                        desc: "C Transaction status line", 
+                        desc: "C Cleared status line", 
                         qif: `CX
 ^
 `,
-                        wantRecs: []*Record{&Record{Status: "X"}},
+                        wantRecs: []*Record{&Record{Cleared: "X"}},
                         wantErrs: []bool{false},
                         wantEof: true,
                 },
@@ -142,7 +142,7 @@ LHousing:Improvements
 ^
 `,
                         wantRecs: []*Record{
-				&Record{Date:"15/03'2003", Amount: "-26.07", Number: "VISA", Status: "X", Payee: "Homebase", Label: "Housing:Improvements", Memo: "Paint"}, 
+				&Record{Date:"15/03'2003", Amount: "-26.07", Number: "VISA", Cleared: "X", Payee: "Homebase", Label: "Housing:Improvements", Memo: "Paint"},
 			},
                         wantErrs: []bool{false},
                         wantEof: true,
