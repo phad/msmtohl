@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/phad/msmtohl/parser/qif"
@@ -21,15 +22,9 @@ func main() {
 	}
 	defer qf.Close()
 
-	q := qif.New(qf)
-	for {
-		rec, err := q.Next()
-		if err == qif.ErrEOF {
-			break
-		} else if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			break
-		}
-		fmt.Printf("Read QIF record: %v\n", rec)
+	rs, err := qif.NewRecordSet(qf)
+	if err != nil {
+		log.Fatalf("Reading file %q got error: %v", *inFile, err)
 	}
+	log.Printf("For account %q read %d records.", rs.AccountName(), len(rs.Records))
 }

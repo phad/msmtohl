@@ -23,6 +23,11 @@ type Record struct {
 	Memo string
 }
 
+type RecordSet struct {
+	Opening *Record
+	Records []*Record
+}
+
 func (r *Record) String() string {
 	return fmt.Sprintf("type %q date %q amount %q number %q cleared %q payee %q label %q memo %q",
 		r.Type, r.Date, r.Amount, r.Number, r.Cleared, r.Payee, r.Label, r.Memo)
@@ -76,4 +81,34 @@ func (q *QIF) Next() (*Record, error) {
 		}
 	}
 	return nil, ErrEOF
+}
+
+func NewRecordSet(r io.Reader) (*RecordSet, error) {
+	q := New(r)
+	first, err := q.Next()
+	if err != nil {
+		return nil, fmt.Errorf("reading first QIF record, error: %v", err)
+	}
+	if first.Type != "Type:Bank" {
+		return nil, fmt.Errorf("unsupported first record type: got %q want \"Type:Bank\" (record: %v)", first.Type, first)
+	}
+	rs := &RecordSet{Opening: first}
+	cnt := 0
+	for {
+		cnt++
+		r, err := q.Next()
+		if err == ErrEOF {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("reading QIF record %d, error: %v", cnt, err)
+		}
+		rs.Records = append(rs.Records, r)
+	}
+	return rs, nil
+}
+
+func (rs *RecordSet) AccountName() string {
+	n := rs.Opening.Label
+	return n[1:len(n)-1]
 }
