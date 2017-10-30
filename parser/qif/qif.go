@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 )
 
 type QIF struct {
@@ -111,4 +112,9 @@ func NewRecordSet(r io.Reader) (*RecordSet, error) {
 func (rs *RecordSet) AccountName() string {
 	n := rs.Opening.Label
 	return n[1:len(n)-1]
+}
+
+func ParseDate(d string) (time.Time, error) {
+	// Time format exported by Microsoft Money 2000 is dd/mm'yyyy
+	return time.Parse("02/01'2006", d)
 }
