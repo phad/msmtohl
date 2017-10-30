@@ -35,4 +35,3 @@ type Transaction struct {
 	Payee, Description string
 	Postings []Posting	
 }
-
