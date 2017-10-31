@@ -1,4 +1,4 @@
-// Package model contains the types used to model transactions and serialize them in the hledger journal format.
+// Package model contains the types used to model transactions and serialise them in the hledger journal format.
 package model
 
 import (

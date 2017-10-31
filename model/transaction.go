@@ -28,7 +28,7 @@ func (s Status) String() string {
 	return ""
 }
 
-// Account is an account name, modeled as a label hierarchy.
+// Account is an account name, modelled as a label hierarchy.
 type Account []string
 
 // Posting models a credit to, or debit from, a particular Account.
