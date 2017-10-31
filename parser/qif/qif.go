@@ -9,19 +9,19 @@ import (
 )
 
 type QIF struct {
-	scanner *bufio.Scanner
+	scanner   *bufio.Scanner
 	linesRead int
 }
 
 type Record struct {
-	Type string
-	Date string
-	Amount string
-	Number string
+	Type    string
+	Date    string
+	Amount  string
+	Number  string
 	Cleared string
-	Payee string
-	Label string
-	Memo string
+	Payee   string
+	Label   string
+	Memo    string
 }
 
 type RecordSet struct {
@@ -35,7 +35,7 @@ func (r *Record) String() string {
 }
 
 func New(qifData io.Reader) *QIF {
-    return &QIF{scanner: bufio.NewScanner(qifData)}
+	return &QIF{scanner: bufio.NewScanner(qifData)}
 }
 
 var ErrEOF = errors.New("QIF end of file")
@@ -52,33 +52,33 @@ func (q *QIF) Next() (*Record, error) {
 			return nil, fmt.Errorf("QIF: empty line at line %d", q.linesRead)
 		}
 		switch spec, rest := line[0:1], line[1:]; spec {
-			case "!":
-				// 'Type' line
-				r.Type = rest
-			case "D":
-				// Date line
-				r.Date = rest
-			case "T", "U":
-				// Transaction amount line
-				r.Amount = rest
-			case "N":
-				// Check number line, or other identifier eg. ATM
-				r.Number = rest
-			case "C":
-				// Cleared status line
-				r.Cleared = rest
-			case "P":
-				// Payee line
-				r.Payee = rest
-			case "L":
-				// Label (category) line
-				r.Label = rest
-			case "M":
-				// Memo (description) line
-				r.Memo = rest
-			case "^":
-				// Record separator line
-				return r, nil
+		case "!":
+			// 'Type' line
+			r.Type = rest
+		case "D":
+			// Date line
+			r.Date = rest
+		case "T", "U":
+			// Transaction amount line
+			r.Amount = rest
+		case "N":
+			// Check number line, or other identifier eg. ATM
+			r.Number = rest
+		case "C":
+			// Cleared status line
+			r.Cleared = rest
+		case "P":
+			// Payee line
+			r.Payee = rest
+		case "L":
+			// Label (category) line
+			r.Label = rest
+		case "M":
+			// Memo (description) line
+			r.Memo = rest
+		case "^":
+			// Record separator line
+			return r, nil
 		}
 	}
 	return nil, ErrEOF
@@ -111,7 +111,7 @@ func NewRecordSet(r io.Reader) (*RecordSet, error) {
 
 func (rs *RecordSet) AccountName() string {
 	n := rs.Opening.Label
-	return n[1:len(n)-1]
+	return n[1 : len(n)-1]
 }
 
 func ParseDate(d string) (time.Time, error) {
