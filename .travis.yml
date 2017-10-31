@@ -26,7 +26,10 @@ script:
       echo 'Running go test with coverage'
       mkdir -p /tmp/phad_msmtohl_profile
       rm -f /tmp/phad_msmtohl_profile/*
-      go test -covermode=atomic -coverprofile='/tmp/phad_msmtohl_profile/' ./...
+      echo 'TODO(phad): enumerate packages automatically otherwise new ones will be forgotten.'
+      go test -covermode=atomic -coverprofile='/tmp/phad_msmtohl_profile/model' github.com/phad/msmtohl/model
+      go test -covermode=atomic -coverprofile='/tmp/phad_msmtohl_profile/converter' github.com/phad/msmtohl/converter
+      go test -covermode=atomic -coverprofile='/tmp/phad_msmtohl_profile/parser_qif' github.com/phad/msmtohl/parser/qif
       cat /tmp/phad_msmtohl_profile/*.out > /tmp/coverage.txt
       echo 'Running golint'
       golint --set_exit_status ./...
