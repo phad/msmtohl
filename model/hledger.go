@@ -10,7 +10,7 @@ func (t *Transaction) SerializeHledger(w io.Writer) error {
 	if t == nil {
 		return nil
 	}
-	topLine := t.topLine() + "\n" 
+	topLine := t.topLine() + "\n"
 	if _, err := w.Write([]byte(topLine)); err != nil {
 		return err
 	}
@@ -23,7 +23,7 @@ func (t *Transaction) SerializeHledger(w io.Writer) error {
 	return nil
 }
 
-func (t *Transaction) topLine() string{
+func (t *Transaction) topLine() string {
 	if t == nil {
 		return ""
 	}

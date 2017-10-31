@@ -11,45 +11,45 @@ var (
 )
 
 func TestSerializeHledger_topLine(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		desc string
-		txn *Transaction
+		txn  *Transaction
 		want string
 	}{
 		{desc: "nil Transaction, empty topline"},
 		{
 			desc: "txn with date only",
-			txn: &Transaction{Date: d1},
+			txn:  &Transaction{Date: d1},
 			want: "2017/01/12",
 		},
 		{
 			desc: "txn with date and payee only",
-			txn: &Transaction{Date: d1, Payee: "Dave"},
+			txn:  &Transaction{Date: d1, Payee: "Dave"},
 			want: "2017/01/12 Dave",
 		},
 		{
 			desc: "txn with date and description only",
-			txn: &Transaction{Date: d1, Description: "Groceries"},
+			txn:  &Transaction{Date: d1, Description: "Groceries"},
 			want: "2017/01/12 Groceries",
 		},
 		{
 			desc: "txn with date, payee and deascription",
-			txn: &Transaction{Date: d1, Payee: "Dave",Description: "Groceries"},
+			txn:  &Transaction{Date: d1, Payee: "Dave", Description: "Groceries"},
 			want: "2017/01/12 Dave | Groceries",
 		},
 		{
 			desc: "txn with date and payee only in pending state",
-			txn: &Transaction{Date: d1, Payee: "Dave", Status: Pending},
+			txn:  &Transaction{Date: d1, Payee: "Dave", Status: Pending},
 			want: "2017/01/12 ! Dave",
 		},
 		{
 			desc: "txn with date and description only in cleared state",
-			txn: &Transaction{Date: d1, Description: "Groceries", Status: Cleared},
+			txn:  &Transaction{Date: d1, Description: "Groceries", Status: Cleared},
 			want: "2017/01/12 * Groceries",
 		},
 		{
 			desc: "txn with date, payee and description in cleared state",
-			txn: &Transaction{Date: d1, Payee: "Dave", Description: "Groceries", Status: Cleared},
+			txn:  &Transaction{Date: d1, Payee: "Dave", Description: "Groceries", Status: Cleared},
 			want: "2017/01/12 * Dave | Groceries",
 		},
 	}
@@ -64,10 +64,10 @@ func TestSerializeHledger_topLine(t *testing.T) {
 }
 
 func TestSerializeHledger(t *testing.T) {
-	tests := []struct{
-		desc string
-		txn *Transaction
-		want string
+	tests := []struct {
+		desc    string
+		txn     *Transaction
+		want    string
 		wantErr bool
 	}{
 		{desc: "nil Transaction, does nothing"},
