@@ -13,9 +13,9 @@ func FromQIF(rs *qif.RecordSet) ([]*model.Transaction, error) {
 			return nil, err
 		}
 		txns = append(txns, &model.Transaction{
-			Date: d,
-			Status: fromQIFStatus(r.Cleared),
-			Payee: r.Payee,
+			Date:        d,
+			Status:      fromQIFStatus(r.Cleared),
+			Payee:       r.Payee,
 			Description: r.Memo,
 		})
 	}
@@ -24,9 +24,12 @@ func FromQIF(rs *qif.RecordSet) ([]*model.Transaction, error) {
 
 func fromQIFStatus(qs string) model.Status {
 	switch qs {
-	case " ": return model.Unmarked
-	case "*", "C": return model.Pending
-	case "X", "R": return model.Cleared
+	case " ":
+		return model.Unmarked
+	case "*", "C":
+		return model.Pending
+	case "X", "R":
+		return model.Cleared
 	}
 	return model.Unknown
 }
