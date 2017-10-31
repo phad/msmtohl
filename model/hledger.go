@@ -1,3 +1,4 @@
+// Package model contains the types used to model transactions and serialize them in the hledger journal format.
 package model
 
 import (
@@ -6,6 +7,7 @@ import (
 	"strings"
 )
 
+// SerializeHledger writes a text representation in the hledger format of the Transaction to the given Writer.
 func (t *Transaction) SerializeHledger(w io.Writer) error {
 	if t == nil {
 		return nil

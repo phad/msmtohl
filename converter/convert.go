@@ -1,3 +1,4 @@
+// Package converter contains functions to convert transactions from one format to another.
 package converter
 
 import (
@@ -5,6 +6,7 @@ import (
 	"github.com/phad/msmtohl/parser/qif"
 )
 
+// FromQIF converts the QIF RecordSet provided into a set of Transactions.
 func FromQIF(rs *qif.RecordSet) ([]*model.Transaction, error) {
 	var txns []*model.Transaction
 	for _, r := range rs.Records {
