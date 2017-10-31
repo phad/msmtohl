@@ -11,7 +11,7 @@ type Status int
 const (
 	Unknown  Status = 0 // Unknown represents an unknown status.
 	Unmarked Status = 1 // Unmarked is used for Transactions with no cleared status marking.
-	Pending  Status = 2 // Pending is used for Transactions awaiting reconcilation.
+	Pending  Status = 2 // Pending is used for Transactions awaiting reconciliation.
 	Cleared  Status = 3 // Cleared is used for Transactions that are cleared, i.e. reconciled.
 )
 
