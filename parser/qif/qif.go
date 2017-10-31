@@ -124,7 +124,7 @@ func (rs *RecordSet) AccountName() string {
 	return n[1 : len(n)-1]
 }
 
-// ParseData parses date strings in the QIF exported by Microsoft Money 2000, which is dd/mm'yyyy
+// ParseDate parses date strings in the QIF exported by Microsoft Money 2000, which is dd/mm'yyyy
 func ParseDate(d string) (time.Time, error) {
 	return time.Parse("02/01'2006", d)
 }

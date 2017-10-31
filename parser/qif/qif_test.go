@@ -13,25 +13,25 @@ func TestNext(t *testing.T) {
 		wantNum  int
 		wantRecs []*Record
 		wantErrs []bool
-		wantEof  bool
+		wantEOF  bool
 	}{
 		{
 			desc:    "empty",
-			wantEof: true,
+			wantEOF: true,
 		},
 		{
 			desc:     "empty record",
 			qif:      `^`,
 			wantRecs: []*Record{{}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc:     "text following record separator is ignored",
 			qif:      `^ignored`,
 			wantRecs: []*Record{{}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "several empty records",
@@ -40,14 +40,14 @@ func TestNext(t *testing.T) {
 ^`,
 			wantRecs: []*Record{{}, {}, {}},
 			wantErrs: []bool{false, false, false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "unclosed record",
 			qif: `!Type:Foo
 D15/03'2003
 `,
-			wantEof: true,
+			wantEOF: true,
 		},
 		{
 			desc: "! Type line",
@@ -56,7 +56,7 @@ D15/03'2003
 `,
 			wantRecs: []*Record{{Type: "Type:Foo"}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "D Date line",
@@ -65,7 +65,7 @@ D15/03'2003
 `,
 			wantRecs: []*Record{{Date: "15/03'2003"}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "T Transaction amount line",
@@ -74,7 +74,7 @@ D15/03'2003
 `,
 			wantRecs: []*Record{{Amount: "10.00"}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "U Transaction amount line (alternative to T)",
@@ -83,7 +83,7 @@ D15/03'2003
 `,
 			wantRecs: []*Record{{Amount: "10.00"}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "N check number line",
@@ -92,7 +92,7 @@ D15/03'2003
 `,
 			wantRecs: []*Record{{Number: "123456"}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "C Cleared status line",
@@ -101,7 +101,7 @@ D15/03'2003
 `,
 			wantRecs: []*Record{{Cleared: "X"}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "P Payee line",
@@ -110,7 +110,7 @@ D15/03'2003
 `,
 			wantRecs: []*Record{{Payee: "John Lewis"}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "L Label line",
@@ -119,7 +119,7 @@ D15/03'2003
 `,
 			wantRecs: []*Record{{Label: "Food:Groceries"}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "M Memo line",
@@ -128,7 +128,7 @@ D15/03'2003
 `,
 			wantRecs: []*Record{{Memo: "Shopping"}},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 		{
 			desc: "complete record",
@@ -145,7 +145,7 @@ LHousing:Improvements
 				{Date: "15/03'2003", Amount: "-26.07", Number: "VISA", Cleared: "X", Payee: "Homebase", Label: "Housing:Improvements", Memo: "Paint"},
 			},
 			wantErrs: []bool{false},
-			wantEof:  true,
+			wantEOF:  true,
 		},
 	}
 
@@ -157,7 +157,7 @@ LHousing:Improvements
 			r, e := qif.Next()
 			t.Logf("Next()=%d %v %v", count, r, e)
 			if e == ErrEOF {
-				if !test.wantEof || count < len(test.wantRecs) {
+				if !test.wantEOF || count < len(test.wantRecs) {
 					t.Errorf("%s: Next()=_,EOF prematurely at count=%d want count=%d", test.desc, count, len(test.wantRecs))
 				}
 				break

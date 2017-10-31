@@ -7,11 +7,12 @@ import (
 // Status represents the 'cleared' status of a Transaction
 type Status int
 
+// Defined statuses from http://hledger.org/journal.html
 const (
-	Unknown  Status = 0 // The status is unknown.
-	Unmarked Status = 1 // The status is unmarked.
-	Pending  Status = 2 // The status is pending reconcilation.
-	Cleared  Status = 3 // The status is cleared (ie. reconciled).
+	Unknown  Status = 0 // Unknown represents an unknown status.
+	Unmarked Status = 1 // Unmarked is used for Transactions with no cleared status marking.
+	Pending  Status = 2 // Pending is used for Transactions awaiting reconcilation.
+	Cleared  Status = 3 // Cleared is used for Transactions that are cleared, i.e. reconciled.
 )
 
 // String conforms with Stringer for Status values.
