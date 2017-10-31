@@ -3,10 +3,14 @@ package model
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 func (t *Transaction) SerializeHledger(w io.Writer) error {
-	topLine := fmt.Sprintf("%s %s %s | %s\n", t.Date.Format("02/01/2006"), t.Status, t.Payee, t.Description)
+	if t == nil {
+		return nil
+	}
+	topLine := t.topLine() + "\n" 
 	if _, err := w.Write([]byte(topLine)); err != nil {
 		return err
 	}
@@ -17,4 +21,24 @@ func (t *Transaction) SerializeHledger(w io.Writer) error {
 		}
 	}
 	return nil
+}
+
+func (t *Transaction) topLine() string{
+	if t == nil {
+		return ""
+	}
+	items := []string{t.Date.Format("2006/01/02")}
+	if t.Status != Unknown && t.Status != Unmarked {
+		items = append(items, t.Status.String())
+	}
+	if len(t.Payee) > 0 {
+		items = append(items, t.Payee)
+	}
+	if len(t.Payee) > 0 && len(t.Description) > 0 {
+		items = append(items, "|")
+	}
+	if len(t.Description) > 0 {
+		items = append(items, t.Description)
+	}
+	return strings.Join(items, " ")
 }
