@@ -1,0 +1,46 @@
+language: go
+
+os:
+  - linux
+
+go:
+  - 1.9.x
+
+env:
+  - WITH_COVERAGE=true
+  - GOFLAGS='-race'
+
+install:
+  - go get ${GOFLAGS} -d -t ./...
+  - go get github.com/client9/misspell/cmd/misspell
+  - go get github.com/fzipp/gocyclo
+  - go get github.com/golang/lint/golint
+  - go get golang.org/x/tools/cmd/stringer
+
+script:
+  - set -e
+  - cd "$HOME/gopath/src/github.com/phad/msmtohl"
+  - |
+      echo 'running go build'
+      go build ./...
+      echo 'running go test'
+      mkdir -p /tmp/phad_msmtohl_profile
+      rm -f /tmp/phad_msmtohl_profile/*
+      go test -covermode=atomic -coverprofile='/tmp/phad_msmtohl_profile/ ./...
+      cat /tmp/phad_msmtohl_profile/*.out > /tmp/coverage.txt
+      echo 'running golint'
+      golint --set_exit_status ./...
+      echo 'running go vet'
+      go vet ./...
+      echo 'running gocyclo'
+      gocyclo -over 20 .
+      echo 'running misspell'
+      misspell -error -locale UK .
+  - set +e
+
+after_success:
+  - |
+      if [[ -f /tmp/coverage.txt ]]; then
+        cp /tmp/coverage.txt .
+        bash <(curl -s https://codecov.io/bash)
+      fi
