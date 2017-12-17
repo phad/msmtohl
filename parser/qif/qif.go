@@ -13,6 +13,7 @@ import (
 type QIF struct {
 	scanner   *bufio.Scanner
 	linesRead int
+	parseErr  error
 }
 
 // Record groups the QIF attributes for a single transaction read in QIF format.
@@ -25,6 +26,15 @@ type Record struct {
 	Payee   string
 	Label   string
 	Memo    string
+	Splits  []*Split
+}
+
+// Split represents a single sub-transaction in a QIF Record that has >1 split.
+type Split struct {
+	Category string
+	Memo     string
+	Amount   string
+	Percent  string // exists in QIF spec but not supported yet.
 }
 
 // RecordSet is a group of QIF Records, with the opening Record separated.
@@ -47,9 +57,20 @@ func New(qifData io.Reader) *QIF {
 // ErrEOF is a condition used to signal that the parser reached the end of a QIF file.
 var ErrEOF = errors.New("QIF end of file")
 
+// ErrNotSupported is returned if a QIF field type is encountered that this parser
+// doesn't support.
+type ErrNotSupported struct {
+	Desc string
+}
+
+func (e *ErrNotSupported) Error() string {
+	return fmt.Sprintf("QIF: %q not supported.", e.Desc)
+}
+
 // Next is an iterator function that returns the next Record scanned from the QIF file.
 func (q *QIF) Next() (*Record, error) {
 	r := &Record{}
+	var s *Split = nil
 	for q.scanner.Scan() {
 		line, err := q.scanner.Text(), q.scanner.Err()
 		q.linesRead++
@@ -84,8 +105,31 @@ func (q *QIF) Next() (*Record, error) {
 		case "M":
 			// Memo (description) line
 			r.Memo = rest
+		case "S":
+			// Split: Category line
+			if s != nil {
+				r.Splits = append(r.Splits, s)
+			}
+			s = &Split{Category: rest}
+		case "E":
+			// Split: Memo line - we assume the Split opened with 'S'.
+			s.Memo = rest
+		case "$":
+			// Split: Amount line - we assume the Split opened with 'S'
+			s.Amount = rest
+		case "%":
+			// Split: percentage - used in place of Amount. Not supported.
+			q.parseErr = &ErrNotSupported{Desc: "Field %"}
 		case "^":
-			// Record separator line
+			// Record separator line. Store Split if one is in progress.
+			if s != nil {
+				r.Splits = append(r.Splits, s)
+			}
+			if q.parseErr != nil {
+				e := q.parseErr
+				q.parseErr = nil
+				return nil, e
+			}
 			return r, nil
 		}
 	}

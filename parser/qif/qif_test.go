@@ -147,28 +147,85 @@ LHousing:Improvements
 			wantErrs: []bool{false},
 			wantEOF:  true,
 		},
+		{
+			desc: "record with splits",
+			qif: `D24/11'2004
+CX
+MLunch/early dinner at Heathrow for me and R
+T-14.40
+NVISA
+PThe Bridge Bar
+LFood:Dining Out
+SFood:Dining Out
+ELunch/early dinner
+$-10.00
+SDrink
+EBeer & juice
+$-4.40
+^
+`,
+			wantRecs: []*Record{
+				{
+					Date:    "24/11'2004",
+					Amount:  "-14.40",
+					Number:  "VISA",
+					Cleared: "X",
+					Payee:   "The Bridge Bar",
+					Label:   "Food:Dining Out",
+					Memo:    "Lunch/early dinner at Heathrow for me and R",
+					Splits: []*Split{
+						{
+							Category: "Food:Dining Out",
+							Memo:     "Lunch/early dinner",
+							Amount:   "-10.00",
+						},
+						{
+							Category: "Drink",
+							Memo:     "Beer & juice",
+							Amount:   "-4.40",
+						},
+					},
+				},
+			},
+			wantErrs: []bool{false},
+			wantEOF:  true,
+		},
+		{
+			desc: "unsupported Split percentage field",
+			qif: `D24/11'2004
+SFood:Dining Out                               
+ELunch/early dinner                   
+%25.00           
+^   
+`,
+			wantEOF:  true,
+			wantRecs: []*Record{nil},
+			wantErrs: []bool{true},
+		},
 	}
 
 	for _, test := range tests {
-		rd := strings.NewReader(test.qif)
-		qif := New(rd)
-		count := 0
-		for {
-			r, e := qif.Next()
-			t.Logf("Next()=%d %v %v", count, r, e)
-			if e == ErrEOF {
-				if !test.wantEOF || count < len(test.wantRecs) {
-					t.Errorf("%s: Next()=_,EOF prematurely at count=%d want count=%d", test.desc, count, len(test.wantRecs))
+		t.Run(test.desc, func(t *testing.T) {
+			rd := strings.NewReader(test.qif)
+			qif := New(rd)
+			count := 0
+			for {
+				r, e := qif.Next()
+				if e == ErrEOF {
+					if !test.wantEOF || count < len(test.wantRecs) {
+						t.Errorf("%s: Next()=_,EOF prematurely at count=%d want count=%d", test.desc, count, len(test.wantRecs))
+					}
+					break
 				}
-				break
+				wantErr := test.wantErrs[count]
+				if gotErr := e != nil; gotErr != wantErr {
+					t.Errorf("%s: Next()=_,err? %t wantErr? %t (err=%v)", test.desc, gotErr, wantErr, e)
+				}
+				if got, want := r, test.wantRecs[count]; !reflect.DeepEqual(got, want) {
+					t.Errorf("%s: Next()=%v,_ want %v", test.desc, got, want)
+				}
+				count++
 			}
-			if gotErr, wantErr := e != nil, test.wantErrs[count]; gotErr != wantErr {
-				t.Errorf("%s: Next()=_,err? %t wantErr? %t (err=%v)", test.desc, gotErr, wantErr, e)
-			}
-			if got, want := r, test.wantRecs[count]; !reflect.DeepEqual(got, want) {
-				t.Errorf("%s: Next()=%v,_ want %v", test.desc, got, want)
-			}
-			count++
-		}
+		})
 	}
 }
