@@ -12,7 +12,8 @@ import (
 func TestFromQIFRecord(t *testing.T) {
 	tests := []struct{
 		desc string
-		qifRec, opening *qif.Record
+		qifRec *qif.Record
+		opening *model.Posting
 		want *model.Transaction
 		wantErr bool
 	}{
@@ -24,7 +25,7 @@ func TestFromQIFRecord(t *testing.T) {
 				Payee: "Dave",
 				Memo: "New shoes",
 			},
-			opening: &qif.Record{},
+			opening: &model.Posting{},
 			wantErr: true,
 		},
 		{
@@ -38,8 +39,8 @@ func TestFromQIFRecord(t *testing.T) {
 				Memo: "New shoes",
 				Splits: []*qif.Split{},
 			},
-			opening: &qif.Record{
-				Label: "smile:current",
+			opening: &model.Posting{
+				Account: []string{"smile", "current"},
 			},
 			want: &model.Transaction{
 				Date:        time.Date(2016, time.February, 12, 0, 0, 0, 0, time.UTC),
