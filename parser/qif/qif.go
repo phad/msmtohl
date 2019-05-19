@@ -70,7 +70,7 @@ func (e *ErrNotSupported) Error() string {
 // Next is an iterator function that returns the next Record scanned from the QIF file.
 func (q *QIF) Next() (*Record, error) {
 	r := &Record{}
-	var s *Split = nil
+	var s *Split
 	for q.scanner.Scan() {
 		line, err := q.scanner.Text(), q.scanner.Err()
 		q.linesRead++
