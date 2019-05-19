@@ -12,7 +12,7 @@ import (
 func TestFromQIFRecord(t *testing.T) {
 	tests := []struct{
 		desc string
-		qifRec *qif.Record
+		qifRec, opening *qif.Record
 		want *model.Transaction
 		wantErr bool
 	}{
@@ -24,28 +24,39 @@ func TestFromQIFRecord(t *testing.T) {
 				Payee: "Dave",
 				Memo: "New shoes",
 			},
+			opening: &qif.Record{},
 			wantErr: true,
 		},
 		{
-			desc: "all supported fields present",
+			desc: "record with no splits",
 			qifRec: &qif.Record{
 				Date: "12/02'2016",
 				Cleared: "C",
 				Payee: "Dave",
+				Amount: "123",
+				Label: "Clothes:Shoes",
 				Memo: "New shoes",
+				Splits: []*qif.Split{},
+			},
+			opening: &qif.Record{
+				Label: "smile:current",
 			},
 			want: &model.Transaction{
 				Date:        time.Date(2016, time.February, 12, 0, 0, 0, 0, time.UTC),
 				Status:      model.Pending,
 				Payee:       "Dave",
 				Description: "New shoes",
+				Postings:    []model.Posting{
+					{Amount: -123.0, Account: []string{"Clothes", "Shoes"}},
+					{Account: []string{"smile", "current"}},
+				},
 			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			txn, err := fromQIFRecord(test.qifRec)
+			txn, err := fromQIFRecord(test.qifRec, test.opening)
 			if gotErr := err != nil; gotErr != test.wantErr {
 				t.Errorf("fromQIFRecord()=_, err? %t want? %t (err=%v)", gotErr, test.wantErr, err)
 			}
@@ -53,7 +64,7 @@ func TestFromQIFRecord(t *testing.T) {
 				t.Errorf("fromQIFRecord()=%v want %v", txn, test.want)
 			}
 		})
-	}	
+	}
 }
 
 func TestFromQIFStatus(t *testing.T) {
@@ -82,7 +93,7 @@ func TestFromQIFStatus(t *testing.T) {
 		for _, in := range test.inputs {
 			if got, want := fromQIFStatus(in), test.want; got != want {
 				t.Errorf("fromQIFStatus(%q)=%v want %v", in, got, want)
-			}			
+			}
 		}
 	}
 }

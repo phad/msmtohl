@@ -16,8 +16,9 @@ func (t *Transaction) SerializeHledger(w io.Writer) error {
 	if _, err := w.Write([]byte(topLine)); err != nil {
 		return err
 	}
-	for _, p := range t.Postings {
-		entLine := fmt.Sprintf("  %s %f\n", p.Account, p.Amount)
+	for i, p := range t.Postings {
+		last := i == len(t.Postings)-1
+		entLine := fmt.Sprintf("  %s\n", p.postingLine(last))
 		if _, err := w.Write([]byte(entLine)); err != nil {
 			return err
 		}
@@ -44,3 +45,19 @@ func (t *Transaction) topLine() string {
 	}
 	return strings.Join(items, " ")
 }
+
+func (p *Posting) postingLine(last bool) string {
+	ac := ""
+	for i, a := range p.Account {
+		ac += strings.ToLower(strings.Replace(a, " ", "_", -1))
+		if i < len(p.Account) - 1 {
+			ac += ":"
+		}
+	}
+	if last {
+		return ac
+	}
+	// TODO(phad): optional status at start.
+	return fmt.Sprintf("%s  %f", ac, p.Amount)
+}
+

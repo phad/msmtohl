@@ -33,15 +33,20 @@ type Account []string
 
 // Posting models a credit to, or debit from, a particular Account.
 type Posting struct {
+	Status  Status
 	Account Account
 	Amount  float64
 }
 
 // Transaction represents the movement of funds between two or more Accounts.
 type Transaction struct {
-	Date        time.Time // The date on which the Transaction occurred (assumed UTC).
-	Status      Status    // The status of the transaction.
-	Payee       string    // The transaction payee
-	Description string    // A descriptive label for the transaction
-	Postings    []Posting // Two or more Accounts that were involved in the Transaction.
+	Date          time.Time // The date on which the Transaction occurred (assumed UTC).
+	SecondaryDate time.Time // An optional secondary data associated with the Transaction (UTC).
+	Status        Status    // The status of the transaction.
+	Code          string    // An optional short code (text or numbers) for the Transaction.
+	Payee         string    // The Transaction payee.
+	Description   string    // A descriptive label for the Transaction.
+	Comment       string    // Additional comments about the Transaction.
+	Postings      []Posting // Two or more Accounts that were involved in the Transaction.
 }
+
