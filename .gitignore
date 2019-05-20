@@ -21,3 +21,6 @@
 
 # program names
 main
+
+# test data files
+*.journal
