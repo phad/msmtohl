@@ -98,3 +98,45 @@ func TestFromQIFStatus(t *testing.T) {
 		}
 	}
 }
+
+func TestFromSplit(t *testing.T) {
+	tests := []struct{
+		desc string
+		split *qif.Split
+		want *model.Posting
+		wantErr bool
+	}{
+		{
+			desc: "-ve amount, simple category",
+			split: &qif.Split{Amount: "-35.00", Category: "foo"},
+			want: &model.Posting{Amount: 35.0, Account: []string{"foo"}},
+		},
+		{
+			desc: "-ve amount, empty category",
+			split: &qif.Split{Amount: "-12.34", Category: ""},
+			want: &model.Posting{Amount: 12.34, Account: []string{"((unknown account))"}},
+		},
+		{
+			desc: "+ve amount, compound category",
+			split: &qif.Split{Amount: "56.89", Category: "foo:bar:baz"},
+			want: &model.Posting{Amount: -56.89, Account: []string{"foo", "bar", "baz"}},
+		},
+		{
+			desc: "thousands separators removed",
+			split: &qif.Split{Amount: "1,234,567.89", Category: "big"},
+			want: &model.Posting{Amount: -1234567.89, Account: []string{"big"}},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.desc, func(t *testing.T) {
+			posting, err := fromSplit(test.split)
+			if gotErr := err != nil; gotErr != test.wantErr {
+				t.Errorf("fromSplit()=_, err? %t want? %t (err=%v)", gotErr, test.wantErr, err)
+			}
+			if !reflect.DeepEqual(posting, test.want) {
+				t.Errorf("fromSplit(%v)=%v want %v", test.split, posting, test.want)
+			}
+		})
+	}
+}

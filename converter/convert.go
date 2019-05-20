@@ -85,8 +85,12 @@ func fromSplit(s *qif.Split) (*model.Posting, error) {
 		return nil, err
 	}
 	var ac model.Account
-	for _, s := range strings.Split(s.Category, ":") {
-		ac = append(ac, s)
+	if s.Category == "" {
+		ac = append(ac, "((unknown account))")
+	} else {
+		for _, s := range strings.Split(s.Category, ":") {
+			ac = append(ac, s)
+		}
 	}
 	return &model.Posting{Amount: -amount, Account: ac}, nil
 }
