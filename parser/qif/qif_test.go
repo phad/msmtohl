@@ -193,10 +193,10 @@ $-4.40
 		{
 			desc: "unsupported Split percentage field",
 			qif: `D24/11'2004
-SFood:Dining Out                               
-ELunch/early dinner                   
-%25.00           
-^   
+SFood:Dining Out
+ELunch/early dinner
+%25.00
+^
 `,
 			wantEOF:  true,
 			wantRecs: []*Record{nil},
@@ -225,6 +225,26 @@ ELunch/early dinner
 					t.Errorf("%s: Next()=%v,_ want %v", test.desc, got, want)
 				}
 				count++
+			}
+		})
+	}
+}
+
+func TestSanitizeLabel(t *testing.T) {
+	for _, tc := range []struct{
+		in, want string
+	}{
+		{"", ""},
+		{"a", "a"},
+		{"[a", "[a"},
+		{"a]", "a]"},
+		{"[a]", "a"},
+		{"[]", ""},
+		{"[foo bar]", "foo bar"},
+	} {
+		t.Run(tc.in, func(t *testing.T) {
+			if got, want := sanitizeLabel(tc.in), tc.want; got != want {
+				t.Errorf("sanitizeLabel(%s)=%q want %q", tc.in, got, want)
 			}
 		})
 	}

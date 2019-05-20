@@ -101,7 +101,7 @@ func (q *QIF) Next() (*Record, error) {
 			r.Payee = rest
 		case "L":
 			// Label (category) line
-			r.Label = rest
+			r.Label = sanitizeLabel(rest)
 		case "M":
 			// Memo (description) line
 			r.Memo = rest
@@ -171,4 +171,14 @@ func (rs *RecordSet) AccountName() string {
 // ParseDate parses date strings in the QIF exported by Microsoft Money 2000, which is dd/mm'yyyy
 func ParseDate(d string) (time.Time, error) {
 	return time.Parse("02/01'2006", d)
+}
+
+func sanitizeLabel(l string) string {
+	if len(l) < 2 {
+		return l
+	}
+	if l[0] == '[' && l[len(l) - 1] == ']' {
+		return l[1:len(l) - 1]
+	}
+	return l
 }
