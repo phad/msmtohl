@@ -12,7 +12,7 @@ func (t *Transaction) SerializeHledger(w io.Writer) error {
 	if t == nil {
 		return nil
 	}
-	topLine := t.topLine() + "\n"
+	topLine := "\n" + t.topLine() + "\n"
 	if _, err := w.Write([]byte(topLine)); err != nil {
 		return err
 	}
@@ -60,4 +60,3 @@ func (p *Posting) postingLine(last bool) string {
 	// TODO(phad): optional status at start.
 	return fmt.Sprintf("%s  %f", ac, p.Amount)
 }
-
