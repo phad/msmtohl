@@ -122,6 +122,15 @@ D15/03'2003
 			wantEOF:  true,
 		},
 		{
+			desc: "L Label line containing [account name]",
+			qif: `L[Paul_-_smile_current]
+^
+`,
+			wantRecs: []*Record{{Label: "Paul_-_smile_current"}},
+			wantErrs: []bool{false},
+			wantEOF:  true,
+		},
+		{
 			desc: "M Memo line",
 			qif: `MShopping
 ^

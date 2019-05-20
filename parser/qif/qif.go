@@ -174,11 +174,8 @@ func ParseDate(d string) (time.Time, error) {
 }
 
 func sanitizeLabel(l string) string {
-	if len(l) < 2 {
-		return l
-	}
-	if l[0] == '[' && l[len(l) - 1] == ']' {
-		return l[1:len(l) - 1]
+	if len(l) >= 2 && l[0] == '[' && l[len(l) - 1] == ']' {
+		l = l[1:len(l) - 1]
 	}
 	return l
 }
