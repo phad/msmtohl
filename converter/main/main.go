@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/phad/msmtohl/converter"
+	"github.com/phad/msmtohl/model"
 	"github.com/phad/msmtohl/parser/qif"
 )
 
 var (
-	inFile  = flag.String("in_file", "", "Input file in QIF format.")
+	inFiles = flag.String("in_files", "", "Comma-separated input files in QIF format.")
 	outFile = flag.String("out_file", "", "Output file in hledger format.")
 	max     = flag.Int("max", 0, "Maximum number of rows to output (0=output all)")
 )
@@ -21,31 +23,43 @@ func main() {
 
 	fmt.Println("QIF Converter")
 
-	qf, err := os.Open(*inFile)
-	if err != nil {
-		panic(fmt.Errorf("os.File error: %v", err))
-	}
-	defer qf.Close()
-
 	hlf, err := os.Create(*outFile)
 	if err != nil {
-		panic(fmt.Errorf("os.File error: %v", err))
+		panic(fmt.Errorf("Creating %q error: %v", *outFile, err))
 	}
 	defer hlf.Close()
 
-	rs, err := qif.NewRecordSet(qf)
-	if err != nil {
-		log.Fatalf("Reading file %q got error: %v", *inFile, err)
-	}
-	log.Printf("For account %q read %d records.", rs.AccountName(), len(rs.Records))
+	var allTxns []*model.Transaction
+	inFileNames := strings.Split(*inFiles, ",")
+	for _, inf := range inFileNames {
+		fmt.Printf(" .. opening %s\n", inf)
 
-	txns, err := converter.FromQIF(rs)
-	if err != nil {
-		log.Fatalf("Converting QIF RecordSet got error: %v", err)
-	}
-	log.Printf("Converted %d records.", len(txns))
+		qf, err := os.Open(inf)
+		if err != nil {
+			panic(fmt.Errorf("Opening %q error: %v", inf, err))
+		}
+		defer qf.Close()
 
-	for i, txn := range txns {
+		fmt.Printf(" .. parsing QIF from %s\n", inf)
+
+		rs, err := qif.NewRecordSet(qf)
+		if err != nil {
+			log.Fatalf("Reading file %q got error: %v", inf, err)
+		}
+		log.Printf(" .. parsed %d QIF records.", len(rs.Records))
+
+		fmt.Printf(" .. converting to ledger from %s\n", inf)
+
+		txns, err := converter.FromQIF(rs)
+		if err != nil {
+			log.Fatalf("Converting QIF RecordSet got error: %v", err)
+		}
+		log.Printf(" .. converted %d records for account %q.\n\n", len(txns), rs.AccountName())
+
+		allTxns = append(allTxns, txns...)
+	}
+
+	for i, txn := range allTxns {
 		if err = txn.SerializeHledger(hlf); err != nil {
 			panic(err)
 		}
@@ -54,4 +68,3 @@ func main() {
 		}
 	}
 }
-
