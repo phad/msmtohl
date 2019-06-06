@@ -126,7 +126,7 @@ D15/03'2003
 			qif: `L[Paul_-_smile_current]
 ^
 `,
-			wantRecs: []*Record{{Label: "Paul_-_smile_current"}},
+			wantRecs: []*Record{{Label: "Paul_-_smile_current", Transfer: true}},
 			wantErrs: []bool{false},
 			wantEOF:  true,
 		},
@@ -211,6 +211,38 @@ ELunch/early dinner
 			wantRecs: []*Record{nil},
 			wantErrs: []bool{true},
 		},
+		{
+			desc: "funds transferred in",
+			qif: `D28/11'2011
+CX
+MMonthly allowance in from joint ac
+T800.00
+PUs
+L[Joint - smile Current]
+^
+`,
+			wantRecs: []*Record{
+				{Date: "28/11'2011", Amount: "800.00", Number: "", Cleared: "X", Payee: "Us", Label: "Joint - smile Current", Memo: "Monthly allowance in from joint ac", Transfer: true},
+			},
+			wantErrs: []bool{false},
+			wantEOF:  true,
+		},
+		{
+			desc: "funds transferred out",
+			qif: `D28/11'2011
+CX
+MMonthly allowance out to paul ac
+T-800.00
+PPaul
+L[Paul - smile Current]
+^
+`,
+			wantRecs: []*Record{
+				{Date: "28/11'2011", Amount: "-800.00", Number: "", Cleared: "X", Payee: "Paul", Label: "Paul - smile Current", Memo: "Monthly allowance out to paul ac", Transfer: true},
+			},
+			wantErrs: []bool{false},
+			wantEOF:  true,
+		},
 	}
 
 	for _, test := range tests {
@@ -241,19 +273,21 @@ ELunch/early dinner
 
 func TestSanitizeLabel(t *testing.T) {
 	for _, tc := range []struct{
-		in, want string
+		in, wantOut  string
+		wantTransfer bool
 	}{
-		{"", ""},
-		{"a", "a"},
-		{"[a", "[a"},
-		{"a]", "a]"},
-		{"[a]", "a"},
-		{"[]", ""},
-		{"[foo bar]", "foo bar"},
+		{"", "", false},
+		{"a", "a", false},
+		{"[a", "[a", false},
+		{"a]", "a]", false},
+		{"[a]", "a", true},
+		{"[]", "", true},
+		{"[foo bar]", "foo bar", true},
 	} {
 		t.Run(tc.in, func(t *testing.T) {
-			if got, want := sanitizeLabel(tc.in), tc.want; got != want {
-				t.Errorf("sanitizeLabel(%s)=%q want %q", tc.in, got, want)
+			out, isTransfer := sanitizeLabel(tc.in)
+			if out != tc.wantOut || isTransfer != tc.wantTransfer {
+				t.Errorf("sanitizeLabel(%s)=%q,%t want %q,%t", tc.in, out, isTransfer, tc.wantOut, tc.wantTransfer)
 			}
 		})
 	}

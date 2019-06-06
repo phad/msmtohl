@@ -18,15 +18,16 @@ type QIF struct {
 
 // Record groups the QIF attributes for a single transaction read in QIF format.
 type Record struct {
-	Type    string
-	Date    string
-	Amount  string
-	Number  string
-	Cleared string
-	Payee   string
-	Label   string
-	Memo    string
-	Splits  []*Split
+	Type     string
+	Date     string
+	Amount   string
+	Number   string
+	Cleared  string
+	Payee    string
+	Label    string
+	Memo     string
+	Splits   []*Split
+	Transfer bool
 }
 
 // Split represents a single sub-transaction in a QIF Record that has >1 split.
@@ -101,7 +102,7 @@ func (q *QIF) Next() (*Record, error) {
 			r.Payee = rest
 		case "L":
 			// Label (category) line
-			r.Label = sanitizeLabel(rest)
+			r.Label, r.Transfer = sanitizeLabel(rest)
 		case "M":
 			// Memo (description) line
 			r.Memo = rest
@@ -173,9 +174,11 @@ func ParseDate(d string) (time.Time, error) {
 	return time.Parse("02/01'2006", d)
 }
 
-func sanitizeLabel(l string) string {
+// sanitizeLabel strips wrapping [ ] on label.  If present returns the stripped
+// label and true; otherwise the original label and false.
+func sanitizeLabel(l string) (string, bool) {
 	if len(l) >= 2 && l[0] == '[' && l[len(l) - 1] == ']' {
-		l = l[1:len(l) - 1]
+		return l[1:len(l) - 1], true
 	}
-	return l
+	return l, false
 }
