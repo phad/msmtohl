@@ -24,3 +24,6 @@ main
 
 # test data files
 *.journal
+
+# data dir
+data/
