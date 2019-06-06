@@ -2,6 +2,7 @@
 package converter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -51,10 +52,21 @@ func fromQIFRecord(r *qif.Record, fromPosting *model.Posting) (*model.Transactio
 		txn.Postings = append(txn.Postings, *fromPosting)
 		return txn, nil
 	}
-	// Regular, unsplit transaction.
-	p, err := fromSplit(&qif.Split{
+	// Regular, unsplit transaction.  This can include inter-account transfers,
+	// if we find one we fix up to mention transfer_account.
+	var p *model.Posting
+	category := r.Label
+	if r.Transfer {
+		category = "transfer_account"
+		if strings.HasPrefix(r.Amount, "-") {
+			txn.Description += fmt.Sprintf(" (to %q)", r.Label)
+		} else {
+			txn.Description += fmt.Sprintf(" (from %q)", r.Label)
+		}
+	}
+	p, err = fromSplit(&qif.Split{
 		Amount:   r.Amount,
-		Category: r.Label,
+		Category: category,
 	})
 	if err != nil {
 		return nil, err
