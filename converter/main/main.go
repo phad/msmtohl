@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
+	"path/filepath"
 
 	"github.com/phad/msmtohl/converter"
 	"github.com/phad/msmtohl/model"
@@ -30,7 +30,11 @@ func main() {
 	defer hlf.Close()
 
 	var allTxns []*model.Transaction
-	inFileNames := strings.Split(*inFiles, ",")
+	inFileNames, err := filepath.Glob(*inFiles)
+	if err != nil {
+		panic(fmt.Errorf("filepath.Glob(%q) error: %v", *inFiles, err))
+	}
+
 	for _, inf := range inFileNames {
 		fmt.Printf(" .. opening %s\n", inf)
 
