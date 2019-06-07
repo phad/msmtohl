@@ -43,6 +43,9 @@ func (t *Transaction) topLine() string {
 	if len(t.Description) > 0 {
 		items = append(items, t.Description)
 	}
+	if len(t.Comment) > 0 {
+		items = append(items, "  ; " + t.Comment)
+	}
 	return strings.Join(items, " ")
 }
 

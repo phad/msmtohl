@@ -36,6 +36,7 @@ type Posting struct {
 	Status  Status
 	Account Account
 	Amount  float64
+	Comment string    // Additional comments about the Posting.
 }
 
 // Transaction represents the movement of funds between two or more Accounts.
@@ -49,4 +50,3 @@ type Transaction struct {
 	Comment       string    // Additional comments about the Transaction.
 	Postings      []Posting // Two or more Accounts that were involved in the Transaction.
 }
-
