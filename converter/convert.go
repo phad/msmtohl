@@ -104,7 +104,7 @@ func fromSplit(s *qif.Split) (*model.Posting, error) {
 			ac = append(ac, s)
 		}
 	}
-	glog.Infof("fromSplit: account=%q", ac)
+	// glog.Infof("fromSplit: account=%q", ac)
 	return &model.Posting{Amount: -amount, Account: ac}, nil
 }
 
