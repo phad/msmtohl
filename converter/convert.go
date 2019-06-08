@@ -43,6 +43,8 @@ func fromQIFRecord(r *qif.Record, fromPosting *model.Posting) (*model.Transactio
 	}
 	if len(r.Splits) > 0 {
 		for _, s := range r.Splits {
+			isExpense := strings.HasPrefix(s.Amount, "-")
+			s.Category = reformatCategory(s.Category, isExpense)
 			p, err := fromSplit(s)
 			if err != nil {
 				return nil, err
@@ -55,10 +57,11 @@ func fromQIFRecord(r *qif.Record, fromPosting *model.Posting) (*model.Transactio
 	// Regular, unsplit transaction.  This can include inter-account transfers,
 	// if we find one we fix up to mention transfer_account.
 	var p *model.Posting
-	category := reformatCategory(r.Label)
+	isExpense := strings.HasPrefix(r.Amount, "-")
+	category := reformatCategory(r.Label, isExpense)
 	if r.Transfer {
 		category = "transfer_account"
-		if strings.HasPrefix(r.Amount, "-") {
+		if isExpense {
 			txn.Comment = fmt.Sprintf("transfer-to:%q", r.Label)
 		} else {
 			txn.Comment = fmt.Sprintf("transfer-from:%q", r.Label)
@@ -88,7 +91,7 @@ func fromQIFStatus(qs string) model.Status {
 }
 
 func fromOpening(op *qif.Record) (*model.Posting, error) {
-	return fromSplit(&qif.Split{Category: reformatCategory(op.Label), Amount: "0"})
+	return fromSplit(&qif.Split{Category: reformatCategory(op.Label, false), Amount: "0"})
 }
 
 func fromSplit(s *qif.Split) (*model.Posting, error) {
@@ -113,7 +116,7 @@ func sanitizeAmount(a string) string {
 	return strings.Replace(a, ",", "", -1)
 }
 
-func reformatCategory(c string) string {
+func reformatCategory(c string, isExpense bool) string {
 	switch c {
 	case "Abbey ex-TESSA":
 		return "assets:bank:abbey national:paul:ex-tessa"
@@ -168,6 +171,8 @@ func reformatCategory(c string) string {
 	case "Rachel - Smile Mini ISA":
 		return "assets:bank:smile:rachel:mini_-isa"
 	}
-	// glog.Infof("Didn't reformat %s", c)
-	return c
+	if isExpense {
+		return "expenses:"+c
+	}
+	return "income:"+c
 }

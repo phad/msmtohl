@@ -34,7 +34,7 @@ func TestFromQIFRecord(t *testing.T) {
 				Date: "12/02'2016",
 				Cleared: "C",
 				Payee: "Dave",
-				Amount: "123",
+				Amount: "-123",
 				Label: "Clothes:Shoes",
 				Memo: "New shoes",
 				Splits: []*qif.Split{},
@@ -48,7 +48,7 @@ func TestFromQIFRecord(t *testing.T) {
 				Payee:       "Dave",
 				Description: "New shoes",
 				Postings:    []model.Posting{
-					{Amount: -123.0, Account: []string{"Clothes", "Shoes"}},
+					{Amount: 123.0, Account: []string{"expenses", "Clothes", "Shoes"}},
 					{Account: []string{"smile", "current"}},
 				},
 			},
