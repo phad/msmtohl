@@ -144,8 +144,13 @@ func NewRecordSet(r io.Reader) (*RecordSet, error) {
 	if err != nil {
 		return nil, fmt.Errorf("reading first QIF record, error: %v", err)
 	}
-	if first.Type != "Type:Bank" {
-		return nil, fmt.Errorf("unsupported first record type: got %q want \"Type:Bank\" (record: %v)", first.Type, first)
+	switch first.Type {
+		case "Type:Bank":
+	  case "Type:Cash":
+		case "Type:CCard":
+			break
+		default:
+			return nil, fmt.Errorf("unsupported first record type: got %q want \"Type:Bank\", \"Type:CCard\" or \"Type:Cash\", (record: %v)", first.Type, first)
 	}
 	rs := &RecordSet{Opening: first}
 	cnt := 0
@@ -169,9 +174,16 @@ func (rs *RecordSet) AccountName() string {
 	return n[1 : len(n)-1]
 }
 
-// ParseDate parses date strings in the QIF exported by Microsoft Money 2000, which is dd/mm'yyyy
+// ParseDate parses date strings in the QIF format used by Microsoft Money 2000,
+// which is dd/mm'yyyy or dd/mm/yyyy for pre-2000 dates.
 func ParseDate(d string) (time.Time, error) {
-	return time.Parse("02/01'2006", d)
+	t, err := time.Parse("02/01'2006", d)
+	if err != nil {
+		if t, err = time.Parse("02/01/2006", d); err != nil {
+			return time.Time{}, err
+		}
+	}
+	return t, nil
 }
 
 // sanitizeLabel strips wrapping [ ] on label.  If present returns the stripped

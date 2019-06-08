@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestNext(t *testing.T) {
@@ -64,6 +65,15 @@ D15/03'2003
 ^
 `,
 			wantRecs: []*Record{{Date: "15/03'2003"}},
+			wantErrs: []bool{false},
+			wantEOF:  true,
+		},
+		{
+			desc: "D Date line (older format)",
+			qif: `D01/02/1996
+^
+`,
+			wantRecs: []*Record{{Date: "01/02/1996"}},
 			wantErrs: []bool{false},
 			wantEOF:  true,
 		},
@@ -288,6 +298,33 @@ func TestSanitizeLabel(t *testing.T) {
 			out, isTransfer := sanitizeLabel(tc.in)
 			if out != tc.wantOut || isTransfer != tc.wantTransfer {
 				t.Errorf("sanitizeLabel(%s)=%q,%t want %q,%t", tc.in, out, isTransfer, tc.wantOut, tc.wantTransfer)
+			}
+		})
+	}
+}
+
+func TestParseDate(t *testing.T) {
+	for _, tc := range []struct{
+		in       string
+		wantTime time.Time
+		wantErr  bool
+	}{
+		{"", time.Time{}, true},
+		{"not a date", time.Time{}, true},
+		{"13-04-2006", time.Time{}, true},
+		{"13/04'2006", time.Date(2006, time.April, 13, 0, 0, 0, 0, time.UTC), false},
+		{"11/07/1970", time.Date(1970, time.July, 11, 0, 0, 0, 0, time.UTC), false},
+	} {
+		t.Run(tc.in, func(t *testing.T) {
+			tm, err := ParseDate(tc.in)
+			if gotErr := err != nil; gotErr != tc.wantErr {
+				t.Errorf("ParseDate(%s)=err? %t want? %t (err=%v)", tc.in, gotErr, tc.wantErr, err)
+			}
+			if err != nil {
+				return
+			}
+			if tm != tc.wantTime {
+				t.Errorf("ParseDate(%s)=%v want %v", tc.in, tm, tc.wantTime)
 			}
 		})
 	}
