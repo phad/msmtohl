@@ -125,6 +125,8 @@ func reformatCategory(c string) string {
 		return "assets:bank:smile:joint:savings 2 (house)"
 	case "Miranda - Halifax  Savings":
 		return "assets:bank:halifax:miranda:savings"
+	case "Orange VISA":
+		return "liabilities:bank:orange:paul:credit card"
 	case "Oscar - goHenry":
 		return "assets:bank:gohenry:oscar"
 	case "Oscar - Halifax Ch Regular Saver":
