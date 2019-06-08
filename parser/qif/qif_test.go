@@ -5,7 +5,11 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"golang.org/x/text/encoding/charmap"
 )
+
+var decoder = charmap.ISO8859_15.NewDecoder()
 
 func TestNext(t *testing.T) {
 	tests := []struct {
@@ -258,7 +262,7 @@ L[Paul - smile Current]
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			rd := strings.NewReader(test.qif)
-			qif := New(rd)
+			qif := New(rd, decoder)
 			count := 0
 			for {
 				r, e := qif.Next()

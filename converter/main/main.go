@@ -11,6 +11,7 @@ import (
 	"github.com/phad/msmtohl/converter"
 	"github.com/phad/msmtohl/model"
 	"github.com/phad/msmtohl/parser/qif"
+	"golang.org/x/text/encoding/charmap"
 )
 
 var (
@@ -36,6 +37,8 @@ func main() {
 		panic(fmt.Errorf("filepath.Glob(%q) error: %v", *inFiles, err))
 	}
 
+	decoder := charmap.ISO8859_15.NewDecoder()
+
 	for _, inf := range inFileNames {
 		fmt.Printf(" .. opening %s\n", inf)
 
@@ -47,7 +50,7 @@ func main() {
 
 		fmt.Printf(" .. parsing QIF from %s\n", inf)
 
-		rs, err := qif.NewRecordSet(qf)
+		rs, err := qif.NewRecordSet(qf, decoder)
 		if err != nil {
 			log.Fatalf("Reading file %q got error: %v", inf, err)
 		}

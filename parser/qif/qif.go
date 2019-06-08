@@ -7,11 +7,14 @@ import (
 	"fmt"
 	"io"
 	"time"
+
+	"golang.org/x/text/encoding"
 )
 
 // QIF contains the scan state for a set of records in QIF format.
 type QIF struct {
 	scanner   *bufio.Scanner
+	decoder   *encoding.Decoder
 	linesRead int
 	parseErr  error
 }
@@ -51,8 +54,8 @@ func (r *Record) String() string {
 }
 
 // New returns a QIF scanner for QIF data to be read from the given io.Reader.
-func New(qifData io.Reader) *QIF {
-	return &QIF{scanner: bufio.NewScanner(qifData)}
+func New(qifData io.Reader, dec *encoding.Decoder) *QIF {
+	return &QIF{scanner: bufio.NewScanner(qifData), decoder: dec}
 }
 
 // ErrEOF is a condition used to signal that the parser reached the end of a QIF file.
@@ -81,7 +84,11 @@ func (q *QIF) Next() (*Record, error) {
 		if len(line) == 0 {
 			return nil, fmt.Errorf("QIF: empty line at line %d", q.linesRead)
 		}
-		switch spec, rest := line[0:1], line[1:]; spec {
+		utf8Line, err := q.decoder.String(line)
+		if err != nil {
+			return nil, fmt.Errorf("QIF: encoding.Decoder.String(%v): err %v", line, err)
+		}
+		switch spec, rest := utf8Line[0:1], utf8Line[1:]; spec {
 		case "!":
 			// 'Type' line
 			r.Type = rest
@@ -138,8 +145,9 @@ func (q *QIF) Next() (*Record, error) {
 }
 
 // NewRecordSet returns a RecordSet for QIF records read from the given io.Reader.
-func NewRecordSet(r io.Reader) (*RecordSet, error) {
-	q := New(r)
+// Character set conversion from input to UTF-8 is performed by dec.
+func NewRecordSet(r io.Reader, dec *encoding.Decoder) (*RecordSet, error) {
+	q := New(r, dec)
 	first, err := q.Next()
 	if err != nil {
 		return nil, fmt.Errorf("reading first QIF record, error: %v", err)
