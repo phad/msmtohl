@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/phad/msmtohl/converter"
 	"github.com/phad/msmtohl/model"
@@ -62,6 +63,10 @@ func main() {
 
 		allTxns = append(allTxns, txns...)
 	}
+
+	sort.Slice(allTxns, func(l, r int) bool {
+		return allTxns[l].Date.Before(allTxns[r].Date)
+	})
 
 	for i, txn := range allTxns {
 		if err = txn.SerializeHledger(hlf); err != nil {
